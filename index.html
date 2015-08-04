@@ -1,17 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>MoveMe</title>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <title>MoveMe</title>
 </head>
 <body>
+<div class="container">
+<center>
+<div id="div">
 <h1>Welcome to MoveMe</h1>
-<form action="index.php" method="post">
-Location: <input type="text" name="location"><br>
-<input type="submit">
-</form>
+Location: <input type="text" id="location"><br>
+<input type="submit" onclick="clickity()">
+</div>
+<br>
+<div id="text" style="display: none;">
+</div>
+<h3></h3>
+<script>
+//This function is called when the user clicks the button
+function clickity(){
+  //We get the value of the location field
+  var location = $('#location').val();
+  //Set the URL variable
+  var url = "http://api.zoopla.co.uk/api/v1/property_listings.json?area=" + location + "&api_key=c88442waawanw44ygzem2ee2";
+  //Make a request to the ZOOPLA servers.
+  $.get(url, function(firstData) {
+    var listData = [];
+    console.log(firstData);
+    firstData['listing'].forEach(function(item){
+      listData.push({
+        'area_name': firstData.area_name,
+        'num_bedrooms': item.num_bedrooms,
+        'property_type': item.property_type,
+        'num_floors': item.num_floors,
+        'price': item.price,
+        'address': item.displayable_address,
+        'description': item.description
+      });
+    });
 
+    listData.forEach(function(result){
+      //Find the address string in the data sent back.
+      var place_str = result['address'];
 
-	
-</form>
+      //Prepare the google maps geocoding URL
+      geoURL = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + place_str + '&key=AIzaSyBJkKkDhn6Hily7xmGtPEVYe5ehoDWrF94';
+      //Make a request to Google's servers.
+      $.get(geoURL, function(data) {
+        $('#div').fadeOut('slow');
+        $('#text').fadeIn('slow');
+        $('#text').append(data['results'][0]['geometry']['location']['lat'] + ', ' + data['results'][0]['geometry']['location']['lng'] + '<br>');
+      });
+    });
+  });
+}
+</script>
+</div>
 </body>
 </html>
